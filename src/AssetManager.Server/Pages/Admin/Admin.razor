@@ -1,0 +1,54 @@
+﻿@page "/Admin"
+@using AssetManager.Library
+
+<PageTitle>Database Info</PageTitle>
+
+<div class="admin_content align-content-center text-center">
+    <AuthorizeView>
+        <Authorized>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <div class="alert-warning">
+                <h1>CAREFUL! These actions can damage the database!</h1>
+            </div>
+            <br/>
+
+            <h3>Database Controls</h3>
+            <div id="db_control">
+                <button @onclick="ButtonReset" class="btn btn-primary">Full Reset to Empty Database</button>
+                <hr/>
+                <button @onclick="ButtonAddEvalData" class="btn btn-primary">Full Reset to Evaluation Data</button>
+                <hr/>
+                <button @onclick="ButtonAddDevData" class="btn btn-primary">Full Reset to Development Data</button>
+                <hr/>
+                <button @onclick="ButtonAddBulkData" class="btn btn-primary">Full Reset to Bulk Data *May be slow!*</button>
+            </div>
+        </Authorized>
+    </AuthorizeView>
+    <br/>
+</div>
+
+@code {
+
+    private void ButtonReset()
+    {
+        AssetManagerService.Instance.DatabaseService.TestingResetDatabase();
+    }
+    
+    private void ButtonAddEvalData()
+    {
+        AssetManagerService.Instance.DatabaseService.TestingAddEvalDataToDatabase();
+    }
+    
+    private void ButtonAddDevData()
+    {
+        AssetManagerService.Instance.DatabaseService.TestingAddDevDataToDatabase();
+    }
+    
+    private void ButtonAddBulkData()
+    {
+        AssetManagerService.Instance.DatabaseService.TestingAddBulkDataToDatabase();
+    }
+}

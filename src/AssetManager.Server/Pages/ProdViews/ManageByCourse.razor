@@ -1,0 +1,310 @@
+﻿@page "/Manage/Course"
+@using AssetManager.Library
+@using AssetManager.Library.Classes
+@using AssetManager.Library.Classes.Asset
+@using System.ComponentModel
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Course Manager</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <div class="align-content-center text-center">
+            <br/>
+            <h1>Simulated Stakeholder Course Asset Manager</h1>
+            <div class="course-view course-select container shadow-lg">
+                <h3 style="font-weight: bold">Course Selection</h3>
+                <p>This page is intended to simulate how a stakeholder would associate assets with a course an administration panel.</p>
+                <label for="courses" class="lead">Select a course to manage associations:</label>
+                <select class="form-select" name="courses" id="courses" @onchange="OnSelectNewCourse">
+                    @foreach (var course in AssetManagerService.Instance.DatabaseService.Library.Courses)
+                    {
+                        <option style="">@course.CourseId - @course.Number @course.Name</option>
+                    }
+                </select>
+            </div>
+            <hr/>
+            <div class="table course-asset-container container pt-2">
+                <div class="row">
+                    <div class="container course-view pt-3 shadow">
+                        <div class="row">
+                            <div class="col align-content-center">
+                                <h3 class="fw-bold mb-3">Add Course Assets</h3>
+                                <div class="row align-items-start">
+                                    <div class="col-8">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="asset_search">Filter by Name or Author. <i>Case Sensitive</i></label>
+                                            <input type="text" class="form-control" id="asset_search" @bind="@_searchTerm" width="50%">
+                                        </div>
+                                    </div>
+                                    <div class="col-2 align-items-end">
+                                        <div class="mb-3 pt-lg-4">
+                                            <button class="wgu-button-yellow btn-primary" style="width: 75px" @onclick="OnSearchClick">Search</button>
+                                        </div>
+                                    </div>
+                                    <div class="col-2 align-items-end">
+                                        <div class="mb-3 pt-lg-4">
+                                            <button class="wgu-button-white btn-primary" style="width: 75px" @onclick="OnResetSearchTermClick">Reset</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="container">
+                                <div class="row align-items-start">
+                                    <div class="col-8 align-content-start">
+                                        <label class="form-label" for="asset_selector"><i>Select an asset and press add to associate it with this course.</i></label>
+                                        <select class="form-select mb-3" name="courses" id="asset_selector" onchange="@(OnSelectMaster)">
+                                            @foreach (var asset in _assetsAll)
+                                            {
+                                                <option selected="@(asset == _selectedAssetForMaster)"> @asset.AssetId - @asset.Name</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-2 align-items-end">
+                                        <div class="mb-3 pt-lg-4">
+                                            <button class="wgu-button-yellow btn-primary" style="width: 150px" @onclick="OnAddClick">Add Asset</button>
+                                        </div>
+                                    </div>
+                                    <div class="alert-info">@_resultTextAdd</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="container course-view shadow">
+                        <h3 class="row fw-bold ps-3">Remove Course Assets</h3>
+                        <div class="row align-items-start">
+                            <div class="col-8 align-content-start text-start">
+                                <label class="form-label text-start" for="asset_current"><i>Select an asset and press remove to no longer associate it with this course.</i></label>
+                                <select class="form-select mb-3" name="courses" id="asset_current" onchange="@(OnSelectCurrent)">
+                                    @foreach (var asset in _assetsCurrent)
+                                    {
+                                        <option selected="@(asset == _selectedAssetForCourse)"> @asset.AssetId - @asset.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-2 align-items-end">
+                                <div class="mb-3 pt-lg-4">
+                                    <button class="wgu-button-yellow btn-primary" style="width: 150px" @onclick="OnRemoveClick">Remove Asset</button>
+                                </div>
+                            </div>
+                            <div class="alert-info">@_resultTextRemove</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="container course-view shadow">
+                        <h3 class="fw-bold ps-3">Edit Course Asset Hierarchy</h3>
+                        <i class="pb-5">Lower numbers appear higher in the list presented to a student. Official assets will always be higher than supplemental.</i>
+                        <br class="mt-3"/>
+                        @foreach (var courseAsset in _courseAssets.OrderBy(x => x.Hierarchy))
+                        {
+                            <div class="row align-items-start align-middle">
+                                <div class="col-3 align-content-lg-start align-middle">
+                                    <div class="mb-1 mt-1">
+                                        <select @bind="courseAsset.Hierarchy" class="form-select flex-fill">
+                                            @for (int i = 1; i < 10; i++)
+                                            {
+                                                <option >@i</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="mb-1 mt-2">
+                                        @_assetsCurrent.First(x => x.AssetId == courseAsset.AssetId).Name
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        <div class="row">
+                            <div class="col-2 align-items-end">
+                                <div class="mb-3 pt-lg-4">
+                                    <button class="wgu-button-yellow btn-primary" style="width: 75px" @onclick="OnSaveHierarchyClick">Save</button>
+                                </div>
+                            </div>
+                            <div class="col-2 align-items-end">
+                                <div class="mb-3 pt-lg-4">
+                                    <button class="wgu-button-white btn-primary" style="width: 75px" @onclick="OnResetHierarchyClick">Reset</button>
+                                </div>
+                            </div>
+                            <div class="alert-info">@_resultTextUpdateHierarchy</div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+
+@code {
+
+    private Asset? _selectedAssetForMaster;
+    private Asset? _selectedAssetForCourse;
+    private readonly BindingList<CourseAsset> _courseAssets = new();
+    private Course? _selectedCourse;
+    private readonly BindingList<Asset> _assetsAll = new ();
+    private readonly BindingList<Asset> _assetsCurrent = new ();
+
+    private string _resultTextAdd = string.Empty;
+    private string _resultTextRemove = string.Empty;
+    private string _resultTextUpdateHierarchy = string.Empty;
+    private string? _searchTerm;
+
+    protected override void OnInitialized()
+    {
+        if (!AssetManagerService.Instance.DatabaseService.Library.Courses.Any()) return;
+        UpdateMasterAssetList();
+        UpdateCourse(AssetManagerService.Instance.DatabaseService.Library.Courses.First().CourseId);
+        base.OnInitialized();
+    }
+    
+    private void OnSelectNewCourse(ChangeEventArgs obj)
+    {
+        if (int.TryParse(obj.Value?.ToString()?.Split(" ")[0],out int result))
+        {
+            UpdateCourse(result);
+        }
+    }
+
+    private void UpdateCourse(int courseId)
+    {
+        if (!AssetManagerService.Instance.DatabaseService.Library.Courses.Any()) return;
+        _selectedCourse = AssetManagerService.Instance.DatabaseService.Library.Courses.First(x => x.CourseId == courseId);
+        _courseAssets.Clear();
+        _assetsCurrent.Clear();
+        if (!AssetManagerService.Instance.DatabaseService.Library.CourseAssets.Any()) return;
+        AssetManagerService.Instance.DatabaseService.Library.CourseAssets.Where(x => x.CourseId == _selectedCourse.CourseId).ToList().ForEach(x => _courseAssets.Add(new CourseAsset(x.CourseId,x.AssetId,x.Hierarchy)));
+        _selectedAssetForMaster = _assetsAll.First();
+        _courseAssets.ToList().ForEach(x => _assetsCurrent.Add(_assetsAll.First(y => y.AssetId == x.AssetId)));
+        _selectedAssetForCourse = _assetsCurrent.Any() ? _assetsCurrent.First() : null;
+    }
+
+    private void UpdateMasterAssetList(string searchTerm = "")
+    {
+        if (!AssetManagerService.Instance.DatabaseService.Library.Assets.Any()) return;
+        _assetsAll.Clear();
+        if (string.IsNullOrEmpty(searchTerm))
+        {
+            AssetManagerService.Instance.DatabaseService.Library.Assets.ToList().ForEach(x => _assetsAll.Add(x));    
+        }
+        else
+        {
+            if (searchTerm.ToList().Any(x => !char.IsLetter(x) && !char.IsDigit(x)))
+            {
+                _searchTerm = "No special characters in search terms.";    
+            }
+            else
+            {
+                AssetManagerService.Instance.DatabaseService.Library.Assets.Where(x => x.Name.Contains(searchTerm) || x.Author.Contains(searchTerm) || x.Summary.Contains(searchTerm)).ToList().ForEach(x => _assetsAll.Add(x));
+            }
+        }
+        _selectedAssetForMaster = _assetsAll.First();
+    }
+
+    private void OnSearchClick()
+    {
+        UpdateMasterAssetList(_searchTerm ?? "");
+    }
+    
+    private void OnResetSearchTermClick(MouseEventArgs obj)
+    {
+        _searchTerm = string.Empty;
+        UpdateMasterAssetList(_searchTerm);
+    }
+
+    private void OnAddClick(MouseEventArgs obj)
+    {
+        if (!_assetsAll.Any()) return;
+        CourseAsset courseAsset = new CourseAsset(_selectedCourse!.CourseId, _selectedAssetForMaster?.AssetId ?? (_assetsAll.Count == 1 ? _assetsAll.First().AssetId : throw new Exception("Delete error!")),9);
+        if (_courseAssets.Any(x => x.CourseId == courseAsset.CourseId && x.AssetId == courseAsset.AssetId))
+        {
+            _resultTextAdd = "Cannot add an asset already associated with the course!";
+            return;
+        }
+        var result = AssetManagerService.Instance.AddOrUpdateCourseAsset(courseAsset, AuthenticationStateProvider.GetAuthenticationStateAsync().Result.User.Identity?.Name ?? "Web Panel");
+        _resultTextAdd = result;
+        UpdateMasterAssetList();
+        UpdateCourse(_selectedCourse.CourseId);
+    }
+
+    private void OnRemoveClick(MouseEventArgs obj)
+    {
+        if (!_assetsCurrent.Any()) return;
+        CourseAsset courseAsset;
+
+        if (_assetsCurrent.Count == 1)
+        {
+            courseAsset =  _courseAssets.First();
+        }
+        else
+        {
+            if (_selectedAssetForCourse == null!)
+            {
+                _resultTextRemove = "Please select an asset first!";
+                return;
+            }
+            if (_courseAssets.Any(x => x.AssetId == _selectedAssetForCourse.AssetId))
+            {
+                courseAsset = _courseAssets.First(x => x.AssetId == _selectedAssetForCourse.AssetId);
+                _selectedAssetForCourse = _assetsCurrent.SkipWhile(x => x.AssetId != _selectedAssetForCourse.AssetId).Skip(1).FirstOrDefault();
+                if (_selectedAssetForCourse == null && _assetsCurrent.Any())
+                {
+                    _selectedAssetForCourse = _assetsCurrent.First();
+                }
+            }
+            else
+            {
+                _resultTextRemove = "Please select an asset first!";
+                return;
+            }
+        }
+        var result = AssetManagerService.Instance.RemoveCourseAsset(courseAsset, AuthenticationStateProvider.GetAuthenticationStateAsync().Result.User.Identity?.Name ?? "Web Panel");
+        _resultTextRemove = result;
+        UpdateMasterAssetList();
+        UpdateCourse(_selectedCourse!.CourseId);
+    }
+    
+    
+    //Note time complexity could be problematic if THOUSANDS of records exist?
+    private void OnSaveHierarchyClick(MouseEventArgs obj)
+    {
+        _resultTextUpdateHierarchy = "";
+        foreach (var courseAsset in _courseAssets)
+        {
+            if (AssetManagerService.Instance.DatabaseService.Library.CourseAssets.First(x => x.AssetId == courseAsset.AssetId && x.CourseId == courseAsset.CourseId).Hierarchy == courseAsset.Hierarchy) continue;
+            var result = AssetManagerService.Instance.AddOrUpdateCourseAsset(courseAsset, AuthenticationStateProvider.GetAuthenticationStateAsync().Result.User.Identity?.Name ?? "Web Panel");
+            _resultTextUpdateHierarchy += "Asset # "+courseAsset.AssetId+ " "+ result + "!";
+        }
+        _courseAssets.Clear();
+        UpdateCourse(_selectedCourse!.CourseId);
+    }
+
+    private void OnResetHierarchyClick(MouseEventArgs obj)
+    {
+        _courseAssets.Clear();
+        UpdateCourse(_selectedCourse!.CourseId);
+    }
+
+
+    private void OnSelectMaster(ChangeEventArgs obj)
+    {
+        if (int.TryParse(obj.Value?.ToString()?.Split(" ")[0],out int id))
+        {
+            _selectedAssetForMaster = _assetsAll.First(x => x.AssetId == id);
+        }
+    }
+
+    private void OnSelectCurrent(ChangeEventArgs obj)
+    {
+        if (int.TryParse(obj.Value?.ToString()?.Split(" ")[0],out int id))
+        {
+            _selectedAssetForCourse = _assetsCurrent.First(x => x.AssetId == id);
+        }
+    }
+}

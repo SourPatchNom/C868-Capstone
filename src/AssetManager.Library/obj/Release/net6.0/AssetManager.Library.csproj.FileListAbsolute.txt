@@ -1,0 +1,12 @@
+R:\REPOS - General Academic\C868 Capstone\OwenDolbergCapstone\AssetManager.Library\bin\Release\net6.0\AssetManager.Library.deps.json
+R:\REPOS - General Academic\C868 Capstone\OwenDolbergCapstone\AssetManager.Library\bin\Release\net6.0\AssetManager.Library.dll
+R:\REPOS - General Academic\C868 Capstone\OwenDolbergCapstone\AssetManager.Library\bin\Release\net6.0\AssetManager.Library.pdb
+R:\REPOS - General Academic\C868 Capstone\OwenDolbergCapstone\AssetManager.Library\obj\Release\net6.0\AssetManager.Library.csproj.AssemblyReference.cache
+R:\REPOS - General Academic\C868 Capstone\OwenDolbergCapstone\AssetManager.Library\obj\Release\net6.0\AssetManager.Library.GeneratedMSBuildEditorConfig.editorconfig
+R:\REPOS - General Academic\C868 Capstone\OwenDolbergCapstone\AssetManager.Library\obj\Release\net6.0\AssetManager.Library.AssemblyInfoInputs.cache
+R:\REPOS - General Academic\C868 Capstone\OwenDolbergCapstone\AssetManager.Library\obj\Release\net6.0\AssetManager.Library.AssemblyInfo.cs
+R:\REPOS - General Academic\C868 Capstone\OwenDolbergCapstone\AssetManager.Library\obj\Release\net6.0\AssetManager.Library.csproj.CoreCompileInputs.cache
+R:\REPOS - General Academic\C868 Capstone\OwenDolbergCapstone\AssetManager.Library\obj\Release\net6.0\AssetManager.Library.dll
+R:\REPOS - General Academic\C868 Capstone\OwenDolbergCapstone\AssetManager.Library\obj\Release\net6.0\refint\AssetManager.Library.dll
+R:\REPOS - General Academic\C868 Capstone\OwenDolbergCapstone\AssetManager.Library\obj\Release\net6.0\AssetManager.Library.pdb
+R:\REPOS - General Academic\C868 Capstone\OwenDolbergCapstone\AssetManager.Library\obj\Release\net6.0\ref\AssetManager.Library.dll

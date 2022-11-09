@@ -1,0 +1,311 @@
+﻿@page "/Manage/Asset"
+@using AssetManager.Library
+@using AssetManager.Library.Classes.Asset
+@using AssetManager.Library.Enums
+@using Microsoft.AspNetCore.Components
+@using System.ComponentModel
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Staff General Manager</PageTitle>
+
+<AuthorizeView Context="authContext">
+    <Authorized>
+        <div class="align-content-center text-center">
+            <br/>
+            <h1>Simulated Stakeholder Asset Manager</h1>
+            <div class="course-view course-select container shadow-lg">
+                <h3 style="font-weight: bold">Direct Asset Managment</h3>
+                <p>This page is intended to simulate how a stakeholder would modify assets. Different users would be involved in this process, with similiar terminals, from administrators to course instructors.</p>
+            </div>
+            <hr/>
+                
+            <div class="course-view table-responsive container shadow-lg pt-2">
+                <h2 class="mb-3" style="font-weight: bold">Asset Manager</h2>
+                <div class="container">
+                    <div class="row align-items-start">
+                        <div class="col-8">
+                            <div class="mb-3">
+                                <label class="form-label" for="asset_search">Filter by Name or Author. <i>Case Sensitive</i></label>
+                                <input type="text" class="form-control" id="asset_search" @bind="@_searchTerm" width="50%">
+                            </div>
+                        </div>
+                        <div class="col-2 align-items-end">
+                            <div class="mb-3 pt-lg-4">
+                                <button class="wgu-button-yellow btn-primary" style="width: 75px" @onclick="OnSearchClick">Search</button>
+                            </div>
+                        </div>
+                        <div class="col-2 align-items-end">
+                            <div class="mb-3 pt-lg-4">
+                                <button class="wgu-button-white btn-primary" style="width: 75px" @onclick="ResetSearchTerm">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <label class="form-label" for="asset_selector">Select an asset to modify or select "Add New":</label>
+                <select class="form-select mb-3" name="courses" id="asset_selector" @onchange="OnSelectNewAsset">
+                    @foreach (var courseAsset in _assets)
+                    {
+                        <option selected="@(_selectedAsset == courseAsset)"> @courseAsset.AssetId:@courseAsset.Name</option>
+                    }
+                    <option>Add New</option>
+                </select>
+                <h2 class="mb-3" style="font-weight: bold">Asset Details</h2>
+                <EditForm EditContext="@_formEditContext" OnValidSubmit="ValidFormSubmitted">
+                    <DataAnnotationsValidator/>
+                    <ValidationSummary/>
+                    <div class="container-fluid border-2 rounded">
+                        <div class="mb-3">
+                            <label class="form-label" for="asset_name">Name</label>
+                            <input type="text" class="form-control" id="asset_name" @bind="@_formAssetModel.Name">
+                            <ValidationMessage For="() => _formAssetModel.Name" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="asset_type">Type <i>Cannot be changed after creation!</i></label>
+                            <select type="text" class="form-select" id="asset_type" @bind="@_formAssetModel.Type" disabled="@(!_blockDelete)">
+                                <option>@AssetType.Asset</option>
+                                <option>@AssetType.Book</option>
+                                <option>@AssetType.Cohort</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="asset_summary">Summary</label>
+                            <textarea type="text" class="form-control" id="asset_summary" @bind="@_formAssetModel.Summary"></textarea>
+                            <ValidationMessage For="() => _formAssetModel.Summary" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="asset_author">Author</label>
+                            <input type="text" class="form-control" id="asset_author" @bind="@_formAssetModel.Author">
+                            <ValidationMessage For="() => _formAssetModel.Author" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="asset_url">Url</label>
+                            <input type="text" class="form-control" id="asset_url" @bind="@_formAssetModel.Url">
+                            <ValidationMessage For="() => _formAssetModel.Url" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="asset_thumb">Thumbnail <i>Leave blank for default icons</i></label>
+                            <input type="text" class="form-control" id="asset_thumb" @bind="@_formAssetModel.ThumbnailUrl">
+                            <ValidationMessage For="() => _formAssetModel.ThumbnailUrl" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="asset_doi">Digital Object Identifier (DOI) <i>If Applicable</i></label>
+                            <input type="text" class="form-control" id="asset_doi" @bind="@_formAssetModel.Doi">
+                            <ValidationMessage For="() => _formAssetModel.Doi" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="@(_formAssetModel.Type == AssetType.Book ? "form-label" : "collapse")" for="asset_isbn" style="visibility: @(_formAssetModel.Type == AssetType.Book ? "visible" : "hidden");">ISBN #</label>
+                            <input type="text" class="@(_formAssetModel.Type == AssetType.Book ? "form-control" : "collapse")" id="asset_isbn" @bind="@_formAssetModel.Isbn" style="visibility: @(_formAssetModel.Type == AssetType.Book ? "visible" : "hidden");">
+                        </div>
+                        <div class="mb-3">                                
+                            <label class="@(_formAssetModel.Type == AssetType.Book ? "form-label" : "collapse")" for="asset_isbn" style="visibility: @(_formAssetModel.Type == AssetType.Book ? "visible" : "hidden");">Publisher</label>
+                            <input type="text" class="@(_formAssetModel.Type == AssetType.Book ? "form-control" : "collapse")" id="asset_publisher" @bind="@_formAssetModel.Publisher" style="visibility: @(_formAssetModel.Type == AssetType.Book ? "visible" : "hidden");">
+                        </div>
+                        <div class="mb-3">                                
+                            <label class="@(_formAssetModel.Type == AssetType.Book ? "form-label" : "collapse")" for="asset_isbn" style="visibility: @(_formAssetModel.Type == AssetType.Book ? "visible" : "hidden");">Publish Date</label>
+                            <input type="date" class="@(_formAssetModel.Type == AssetType.Book ? "form-control" : "collapse")" id="asset_publish_date" @bind="@_formAssetModel.PublishDate" style="visibility: @(_formAssetModel.Type == AssetType.Book ? "visible" : "hidden");">
+                        </div>
+                        <div class="mb-3">
+                            <label class="@(_formAssetModel.Type == AssetType.Cohort ? "form-label" : "collapse")" for="asset_recorded" style="visibility: @(_formAssetModel.Type == AssetType.Cohort ? "visible" : "hidden");">Recorded</label>
+                            <input type="date" class="@(_formAssetModel.Type == AssetType.Cohort ? "form-control" : "collapse")" id="asset_recorded" @bind="@_formAssetModel.DateRecorded" style="visibility: @(_formAssetModel.Type == AssetType.Cohort ? "visible" : "hidden");">
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="asset_active" @bind="@_formAssetModel.IsActive">
+                            <label class="form-check-label" for="asset_active">Active <i>(Should the asset be available to students?)</i></label>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="asset_official" @bind="@_formAssetModel.IsOfficial">
+                            <label class="form-check-label" for="asset_official">Official <i>(Is the asset an official WGU asset?)</i></label>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="asset_internal" @bind="@_formAssetModel.IsInternal">
+                            <label class="form-check-label" for="asset_internal">Internal <i>(Is the link inside the WGU system or third party?)</i></label>
+                        </div>
+                        <div class="mb-3 align-content-end container-fluid" style="text-align: end">
+                            <div class="alert-info mb-3 text-center text-lg-center">@_alertMessage</div>
+                            <button type="submit" class="wgu-button-yellow btn-primary" style="width: 150px; ">Save</button>
+                            <button type="button" class="wgu-button-yellow btn-danger" style="width: 150px; " disabled="@_blockDelete" @onclick="HandleDeleteClick">Delete</button>
+                        </div>
+                    </div>
+                </EditForm>
+                <div>
+                        
+                </div>
+            </div>
+          
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+
+@code {
+
+    readonly AssetFormModel _formAssetModel = new AssetFormModel();
+    EditContext? _formEditContext;
+
+    bool _blockDelete = true;
+    string _searchTerm = "";
+    string _alertMessage = string.Empty;
+
+    Asset? _selectedAsset;
+    
+    readonly BindingList<Asset> _assets = new BindingList<Asset>();
+    
+
+    private void OnSelectNewAsset(ChangeEventArgs obj)
+    {
+        if (obj.Value?.ToString() == "Add New")
+        {
+            _blockDelete = true;
+            ClearData();
+            return;
+        }
+        _blockDelete = false;
+        var firstPart = obj.Value?.ToString()?.Split(":")[0];
+        if (firstPart == null) return;
+        if (int.TryParse(firstPart, out var assetId))
+        {
+            Asset asset = _assets.First(x =>x.AssetId == assetId);
+            PopulateData(asset);    
+        }
+    }
+
+    private void ClearData()
+    {
+        _formAssetModel.AssetId = -1;
+        _formAssetModel.Name = string.Empty;
+        _formAssetModel.Type = AssetType.Asset;
+        _formAssetModel.Summary = string.Empty;
+        _formAssetModel.Author = string.Empty;
+        _formAssetModel.Url = string.Empty;
+        _formAssetModel.ThumbnailUrl = string.Empty;
+        _formAssetModel.IsActive = false;
+        _formAssetModel.IsOfficial = false;
+        _formAssetModel.IsInternal = false;
+        _formAssetModel.Isbn = string.Empty;
+        _formAssetModel.Publisher = string.Empty;
+        _formAssetModel.PublishDate = DateTime.Today;
+        _formAssetModel.Doi = string.Empty;
+        _formAssetModel.DateRecorded = DateTime.Now;
+        _formEditContext = new EditContext(_formAssetModel);
+    }
+
+    private void PopulateData(Asset asset)
+    {
+        _selectedAsset = asset;
+        _formAssetModel.AssetId = asset.AssetId;
+        _formAssetModel.Name = asset.Name;
+        _formAssetModel.Type = Library.Extensions.AssetTypeExtensions.GetAssetTypeEnum(asset);
+        _formAssetModel.Summary = asset.Summary;
+        _formAssetModel.Author = asset.Author;
+        _formAssetModel.Url = asset.Url;
+        _formAssetModel.ThumbnailUrl = asset.ThumbnailUrl;
+        _formAssetModel.Doi = asset.Doi;
+        _formAssetModel.IsActive = asset.IsActive;
+        _formAssetModel.IsOfficial = asset.IsOfficial;
+        _formAssetModel.IsInternal = asset.IsInternal;
+        _formAssetModel.Created = asset.Created;
+        switch (_formAssetModel.Type)
+        {
+            case AssetType.Asset:
+                break;
+            case AssetType.Book:
+                _formAssetModel.Publisher = ((Book)asset).Publisher; 
+                _formAssetModel.PublishDate = ((Book)asset).PublishDate; 
+                _formAssetModel.Isbn = ((Book)asset).Isbn;
+                break;
+            case AssetType.Cohort:
+                _formAssetModel.DateRecorded = ((Cohort)asset).Recorded;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        _formEditContext?.Validate();
+    }
+
+    protected override void OnInitialized()
+    {
+        _formEditContext = new EditContext(_formAssetModel);
+        UpdateAll();
+        base.OnInitialized();
+    }
+
+    private void UpdateAll(string searchTerm = "")
+    {
+        _blockDelete = true;
+        if (!AssetManagerService.Instance.DatabaseService.Library.Assets.Any()) return;
+            
+        _assets.Clear();
+        if (string.IsNullOrEmpty(searchTerm))
+        {
+            AssetManagerService.Instance.DatabaseService.Library.Assets.ToList().ForEach(x => _assets.Add(x));    
+        }
+        else
+        {
+            if (searchTerm.ToList().Any(x => !char.IsLetter(x) && !char.IsDigit(x)))
+            {
+                _searchTerm = "No special characters in search terms.";    
+            }
+            else
+            {
+                AssetManagerService.Instance.DatabaseService.Library.Assets.Where(x => x.Name.Contains(searchTerm) || x.Author.Contains(searchTerm) || x.Summary.Contains(searchTerm)).ToList().ForEach(x => _assets.Add(x));
+            }
+        }
+
+        if (_assets.Any())
+        {
+            _blockDelete = false;
+            PopulateData(_assets.First());
+            return;
+        }
+        ClearData();
+    }
+
+    private void ValidFormSubmitted(EditContext context)
+    {
+        string result;
+        switch (_formAssetModel.Type)
+        {
+            case AssetType.Asset:
+                result = AssetManagerService.Instance.AddOrUpdateAsset(_formAssetModel.GetAsAsset(), AuthenticationStateProvider.GetAuthenticationStateAsync().Result.User.Identity?.Name ?? "Web Panel");
+                break;
+            case AssetType.Book:
+                result = AssetManagerService.Instance.AddOrUpdateAsset(_formAssetModel.GetAsBook(), AuthenticationStateProvider.GetAuthenticationStateAsync().Result.User.Identity?.Name ?? "Web Panel");
+                break;
+            case AssetType.Cohort:
+                result = AssetManagerService.Instance.AddOrUpdateAsset(_formAssetModel.GetAsCohort(), AuthenticationStateProvider.GetAuthenticationStateAsync().Result.User.Identity?.Name ?? "Web Panel");
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        UpdateAll();
+        _alertMessage = result;
+        Console.WriteLine("SAVE CLICKED");
+    }
+    
+    private void HandleDeleteClick()
+    {
+        if (_selectedAsset == null) return;
+        if (_selectedAsset.AssetId == -1) return;
+        if (AssetManagerService.Instance.DatabaseService.Library.CourseAssets.Any(x => x.AssetId == _selectedAsset.AssetId))
+        {
+            _alertMessage = "Cannot delete an asset that is associated with a course. Please remove all course associations first!";
+            UpdateAll();
+            return;
+        }
+        var result = AssetManagerService.Instance.DeleteAsset(_formAssetModel.AssetId, AuthenticationStateProvider.GetAuthenticationStateAsync().Result.User.Identity?.Name ?? "Web Panel");
+        UpdateAll();
+        _alertMessage = result;
+    }
+
+    private void OnSearchClick()
+    {
+        UpdateAll(_searchTerm);
+    }
+
+    private void ResetSearchTerm(MouseEventArgs obj)
+    {
+        _searchTerm = string.Empty;
+        UpdateAll(_searchTerm);
+    }
+
+}

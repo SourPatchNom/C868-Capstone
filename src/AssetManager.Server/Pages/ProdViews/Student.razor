@@ -1,0 +1,114 @@
+﻿@page "/Student"
+@using AssetManager.Library
+@using AssetManager.Library.Classes
+@using AssetManager.Library.Classes.Asset
+@using Microsoft.AspNetCore.Mvc
+@using System.ComponentModel
+
+<PageTitle>Student Course View</PageTitle>
+<AuthorizeView>
+    <Authorized>
+        <div align="center">
+            <br/>
+            <h1>Simulated Student Course View</h1>
+            <div class="course-view course-select shadow-lg">
+                <h3 style="font-weight: bold">Course Selection</h3>
+                <p>This page is intended to simulate how a student would see the assets associated with a course in their my.wgu.edu panel. The new section for implementation begins at "Additional Resources" and ends at "Cohort Sign-up". </p>
+                <label for="courses" class="lead">Select a course to view a students perspective:</label>
+                <select class="form-select" name="courses" id="courses" @onchange="OnSelectNew">
+                    @foreach (var course in AssetManagerService.Instance.DatabaseService.Library.Courses)
+                    {
+                        <option style="">@course.CourseId - @course.Number @course.Name</option>
+                    }
+                </select>
+            </div>
+            <hr/>
+            <div id="large-course-content pt-2">
+                <div class="course-view-learning">
+                    <h2 style="line-height: 1.1;font-weight: 400;">Learning</h2>
+                </div>
+                <div class="course-view table-responsive shadow-lg">
+                    This course has many interactive learning activities. For your best understanding of the course content, complete each lesson. Take advantage of reading the course materials, check your understanding with the interactive elements, watch the videos, and take all the knowledge validation items. The more you interact with the course, the more prepared you will be for the final assessment. Your competency will be demonstrated by the successful completion of an objective or performance assessment.
+                    <hr/>
+                    <h3 style="font-weight: bold">Course Materials</h3>
+                    <table class="mb-3" style="padding:.5rem .5rem;">
+                        <tr>
+                            <td>
+                                <button class="wgu-button-yellow btn-primary">
+                                    <a href="http://www.wgu.edu" class="wgu-button-link" target="_blank">
+                                        Go to the Course Materials
+                                    </a>
+                                </button>
+                            </td>
+                            <td style="height: 50px;"></td>
+                        </tr>
+                    </table>
+                    <hr/>
+                    <h3 style="font-weight: bold">Additional Resources</h3>
+                    <table style="padding:.5rem .5rem;">
+                        @foreach (var asset in _assets)
+                        {
+                            @if (!asset.IsActive) continue;
+                            <tr class="info">
+                                <td><img src="@asset.ThumbnailUrl" height="80" alt="thumbnail" class="p-2"/></td>
+                                <td>
+                                    <button class="@(@asset.IsOfficial ? "wgu-button-yellow" : "wgu-button-white") btn-primary">
+                                        <a href="@asset.Url" class="wgu-button-link" target="_blank">
+                                            @(asset.IsOfficial ? "Official" : "Supplemental") @AssetManager.Library.Extensions.AssetTypeExtensions.GetAssetTypeString(asset) @asset.Name
+                                        </a>
+                                    </button>
+                                </td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>@asset.Summary <br><i>By:</i> @asset.Author <i>Saved:</i> @asset.Created.ToString("d")</td>
+                                <td></td>
+                            </tr>
+                        }
+                    </table>
+                    <hr/>
+                      <h3 style="font-weight: bold">Cohort Sign-Up</h3>
+                    Cohorts provide additional structure and support for challenging aspects of this course. In a cohort you receive specific homework assignments and meet online with mentors and students regularly to discuss the challenging topics.
+                    <br/><br/>
+                    <button class="wgu-button-white btn-primary">
+                        <a href="http://www.wgu.edu/" target="_blank">
+                            EXPLORE COHORT OFFERINGS
+                        </a>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+
+    Course _courseSelected = new Course("blank","Course");
+    List<Asset> _assets = new ();
+
+    private void OnSelectNew(ChangeEventArgs obj)
+    {
+        var courseId = obj.Value?.ToString()?.Split(" ")[0];
+        if (int.TryParse(courseId, out int cid))
+        {
+            UpdateCourseAssets(cid);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        if (AssetManagerService.Instance.DatabaseService.Library.Courses.Any())
+        {
+            UpdateCourseAssets(AssetManagerService.Instance.DatabaseService.Library.Courses.First().CourseId);
+        }
+        base.OnInitialized();
+    }
+
+    private void UpdateCourseAssets(int courseId)
+    {
+        _courseSelected = AssetManagerService.Instance.DatabaseService.Library.Courses.First(x => x.CourseId == courseId);
+        _assets.Clear();
+        _assets = AssetManagerService.Instance.DatabaseService.Library.GetCourseAssets(_courseSelected.CourseId);
+    }
+}

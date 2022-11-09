@@ -1,0 +1,97 @@
+﻿@page "/Report/Course"
+@using AssetManager.Library
+@using AssetManager.Library.Classes
+@using AssetManager.Library.Classes.Asset
+
+<PageTitle>Assets By Course</PageTitle>
+<AuthorizeView>
+    <Authorized>
+        <div class="align-content-center text-center">
+            <br/>
+            <h1>Course Assets Report</h1>
+            <div class="course-view course-select container shadow pt-2">
+                <h3 style="font-weight: bold">Course Selection</h3>
+                <label for="courses" class="lead">Select a course to generate a new report!</label>
+                <select class="form-select" name="courses" id="courses" @onchange="OnSelectNewCourse">
+                    @foreach (var course in AssetManagerService.Instance.DatabaseService.Library.Courses)
+                    {
+                        <option style="">@course.CourseId - @course.Number @course.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="table report-container container shadow pt-2 ">
+                <div class="row text-center p5">
+                    <h3>@(_selectedCourse == null ? "Select a course." : "Assets Associated With " + _selectedCourse.Name) </h3>
+                </div>
+                <div class="row text-center pt-3">
+                    <h4><i>Total assets associated with the course: @_selectedCourseAssets.Count </i></h4>
+                </div>
+                <hr/>
+                <div class="row ps-3">
+                    <div class="col-1"><h5>ID</h5></div>
+                    <div class="col-2"><h5>Created</h5></div>
+                    <div class="col-2"><h5>Creator</h5></div>
+                    <div class="col-4"><h5>Name</h5></div>
+                </div>
+                @foreach (var asset in _selectedCourseAssets)
+                {
+                    <div class="row pt-1 ps-3">
+                        <div class="col-1">
+                            @asset.AssetId
+                        </div>
+                        <div class="col-2">
+                            @_selectedCourseAssetFirstHistory.First(x => x.AssetId == asset.AssetId).EditDate.Date.ToString("d")
+                        </div>
+                        <div class="col-2">
+                            @_selectedCourseAssetFirstHistory.First(x => x.AssetId == asset.AssetId).Editor
+                        </div>
+                        <div class="col-4">
+                            @asset.Name
+                        </div>
+                    </div>
+                }
+                <div class="row pb-3">
+                    
+                </div>
+            </div>
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+
+    Course? _selectedCourse;
+    List<Asset> _selectedCourseAssets = new();
+    List<AssetHistory> _selectedCourseAssetFirstHistory = new();
+    
+    private void OnSelectNewCourse(ChangeEventArgs obj)
+    {
+        if (int.TryParse(obj.Value?.ToString()?.Split(" ")[0],out int result))
+        {
+            UpdateReport(result);
+        }   
+    }
+
+    private void UpdateReport(int courseId)
+    {
+        if (AssetManagerService.Instance.DatabaseService.Library.Courses.All(x => x.CourseId != courseId)) 
+        {
+            return;
+        }
+        _selectedCourse = AssetManagerService.Instance.DatabaseService.Library.Courses.First(x => x.CourseId == courseId);
+        _selectedCourseAssets.Clear();
+        _selectedCourseAssetFirstHistory.Clear();
+        _selectedCourseAssets = AssetManagerService.Instance.DatabaseService.Library.GetCourseAssets(courseId);
+        _selectedCourseAssets.ForEach(x => _selectedCourseAssetFirstHistory.Add(AssetManagerService.Instance.DatabaseService.Library.AssetEdits.First(y => y.AssetId == x.AssetId)));
+    }
+
+    protected override void OnInitialized()
+    {
+        if (AssetManagerService.Instance.DatabaseService.Library.Courses.Any()) 
+        {
+            UpdateReport(AssetManagerService.Instance.DatabaseService.Library.Courses.First().CourseId);
+        }
+        base.OnInitialized();
+    }
+
+}

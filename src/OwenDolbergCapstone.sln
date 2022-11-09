@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetManager.Library", "AssetManager.Library\AssetManager.Library.csproj", "{69DBFC5A-64EC-4DC3-A35A-AB7E5765A009}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetManager.Server", "AssetManager.Server\AssetManager.Server.csproj", "{723CBC05-A11D-4EC0-A299-EC880AEB8DED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetManager.Library.Tests", "AssetManager.Library.Tests\AssetManager.Library.Tests.csproj", "{EFA8A27E-233F-4C7D-99F5-333E5838B61B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{69DBFC5A-64EC-4DC3-A35A-AB7E5765A009}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69DBFC5A-64EC-4DC3-A35A-AB7E5765A009}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69DBFC5A-64EC-4DC3-A35A-AB7E5765A009}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69DBFC5A-64EC-4DC3-A35A-AB7E5765A009}.Release|Any CPU.Build.0 = Release|Any CPU
+		{723CBC05-A11D-4EC0-A299-EC880AEB8DED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{723CBC05-A11D-4EC0-A299-EC880AEB8DED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{723CBC05-A11D-4EC0-A299-EC880AEB8DED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{723CBC05-A11D-4EC0-A299-EC880AEB8DED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFA8A27E-233F-4C7D-99F5-333E5838B61B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFA8A27E-233F-4C7D-99F5-333E5838B61B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFA8A27E-233F-4C7D-99F5-333E5838B61B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFA8A27E-233F-4C7D-99F5-333E5838B61B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
